@@ -8,15 +8,9 @@ env:
     - distro: ernestasposkus/centos7
       init: /usr/lib/systemd/systemd
       run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
-    - distro: ernestasposkus/centos6
-      init: /sbin/init
-      run_opts: ""
     - distro: ernestasposkus/ubuntu1604
       init: /lib/systemd/systemd
       run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
-    - distro: ernestasposkus/ubuntu1404
-      init: /sbin/init
-      run_opts: ""
 
 services:
   - docker
