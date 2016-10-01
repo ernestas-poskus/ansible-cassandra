@@ -1,2 +1,92 @@
 ---
 # tasks file for ansible-cassandra
+- name: Downloading Cassandra archive
+  get_url: >-
+    url={{cassandra_tgz_url}}
+    dest=/tmp/{{cassandra_tgz}}
+    owner=root
+    group=root
+    mode=0644
+
+- name: "Creating directory {{ item }}"
+  file:
+    path: "{{ item }}"
+    state: directory
+    # owner: "root"
+    # group: "root"
+    mode: 0750
+  with_items:
+    - "{{ cassandra_lib_dir }}"
+    - "{{ cassandra_data_dir }}"
+    - "{{ cassnadra_commitlog_dir }}"
+    - "{{ cassandra_cdc_raw_dir }}"
+    - "{{ cassandra_saved_caches_dir }}"
+    - "{{ cassandra_log_dir }}"
+
+- name: Unarchiving Cassandra
+  unarchive: >-
+    copy=no
+    src=/tmp/{{cassandra_tgz}}
+    dest={{cassandra_dir}}
+    owner=root
+    group=root
+    creates={{cassandra_install_dir}}
+
+- name: Linking Cassandra
+  file: >-
+    src={{ cassandra_install_dir }}
+    dest={{ cassandra_link_dir }}
+    owner=root
+    group=root
+    state=link
+
+- name: Adding Cassandra binaries to system path
+  template: >-
+    src=cassandra.sh.j2
+    dest=/etc/profile.d/cassandra.sh
+    owner=root
+    group=root
+    mode=0644
+
+- name: Configuring cassandra.yaml
+  template: >-
+    src=conf/cassandra.yaml.j2
+    dest={{cassandra_install_dir}}/conf/cassandra.yaml
+    owner=root
+    group=root
+    mode=0644
+  notify:
+    - Restart cassandra
+
+- name: Configuring topology properties
+  template: >-
+    src=conf/cassandra-topology.properties.j2
+    dest={{cassandra_install_dir}}/conf/cassandra-topology.properties
+    owner=root
+    group=root
+    mode=0644
+  when: cassandra_endpoint_snitch == 'PropertyFileSnitch'
+  notify:
+    - Restart cassandra
+
+- name: Configuring rackdc properties
+  template: >-
+    src=conf/cassandra-rackdc.properties.j2
+    dest={{cassandra_install_dir}}/conf/cassandra-rackdc.properties
+    owner=root
+    group=root
+    mode=0644
+  when: cassandra_endpoint_snitch == 'GossipingPropertyFileSnitch'
+  notify:
+    - Restart cassandra
+
+- name: Installing Cassandra systemd unit
+  template: >-
+    src=cassandra.service.j2
+    dest=/lib/systemd/system/cassandra.service
+    owner=root
+    group=root
+    mode=0644
+  notify:
+    - Reload systemctl daemon
+    - Restart cassandra
