@@ -4,6 +4,9 @@ cassandra_ver : '3.9'
 cassandra_mirror : 'http://www-eu.apache.org/dist/cassandra' # EU
 # cassandra_mirror : 'http://www-us.apache.org/dist/cassandra' # US
 
+cassandra_owner: 'cassandra'
+cassandra_group: 'cassandra'
+
 # Either specify interface or network address
 cassandra_listen_network_address: ''
 cassandra_listen_network_interface: "{{ ansible_default_ipv4.interface }}"

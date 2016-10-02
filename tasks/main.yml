@@ -1,19 +1,32 @@
 ---
 # tasks file for ansible-cassandra
+- name: Create Cassandra group
+  group:
+    name: "{{ cassandra_group }}"
+    state: present
+
+- name: Create Cassandra user
+  user:
+    name: "{{ cassandra_owner }}"
+    group: "{{ cassandra_group }}"
+    createhome: no
+    shell: /sbin/nologin
+    state: present
+
 - name: Downloading Cassandra archive
   get_url: >-
     url={{cassandra_tgz_url}}
     dest=/tmp/{{cassandra_tgz}}
-    owner=root
-    group=root
+    owner={{cassandra_owner}}
+    group={{cassandra_group}}
     mode=0644
 
 - name: "Creating directory {{ item }}"
   file:
     path: "{{ item }}"
     state: directory
-    # owner: "root"
-    # group: "root"
+    owner: "{{ cassandra_owner }}"
+    group: "{{ cassandra_group }}"
     mode: 0750
   with_items:
     - "{{ cassandra_lib_dir }}"
@@ -28,32 +41,32 @@
     copy=no
     src=/tmp/{{cassandra_tgz}}
     dest={{cassandra_dir}}
-    owner=root
-    group=root
+    owner={{cassandra_owner}}
+    group={{cassandra_group}}
     creates={{cassandra_install_dir}}
 
 - name: Linking Cassandra
   file: >-
     src={{ cassandra_install_dir }}
     dest={{ cassandra_link_dir }}
-    owner=root
-    group=root
+    owner={{cassandra_owner}}
+    group={{cassandra_group}}
     state=link
 
 - name: Adding Cassandra binaries to system path
   template: >-
     src=cassandra.sh.j2
     dest=/etc/profile.d/cassandra.sh
-    owner=root
-    group=root
+    owner={{cassandra_owner}}
+    group={{cassandra_group}}
     mode=0644
 
 - name: Configuring cassandra.yaml
   template: >-
     src=conf/cassandra.yaml.j2
     dest={{cassandra_install_dir}}/conf/cassandra.yaml
-    owner=root
-    group=root
+    owner={{cassandra_owner}}
+    group={{cassandra_group}}
     mode=0644
   notify:
     - Restart cassandra
@@ -62,8 +75,8 @@
   template: >-
     src=conf/cassandra-topology.properties.j2
     dest={{cassandra_install_dir}}/conf/cassandra-topology.properties
-    owner=root
-    group=root
+    owner={{cassandra_owner}}
+    group={{cassandra_group}}
     mode=0644
   when: cassandra_endpoint_snitch == 'PropertyFileSnitch'
   notify:
@@ -73,8 +86,8 @@
   template: >-
     src=conf/cassandra-rackdc.properties.j2
     dest={{cassandra_install_dir}}/conf/cassandra-rackdc.properties
-    owner=root
-    group=root
+    owner={{cassandra_owner}}
+    group={{cassandra_group}}
     mode=0644
   when: cassandra_endpoint_snitch == 'GossipingPropertyFileSnitch'
   notify:
@@ -84,8 +97,8 @@
   template: >-
     src=cassandra.service.j2
     dest=/lib/systemd/system/cassandra.service
-    owner=root
-    group=root
+    owner={{cassandra_owner}}
+    group={{cassandra_group}}
     mode=0644
   notify:
     - Reload systemctl daemon

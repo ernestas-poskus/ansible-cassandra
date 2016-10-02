@@ -5,8 +5,8 @@ Description=Cassandra
 After=network.target
 
 [Service]
-User=root
-Group=root
+User={{cassandra_owner}}
+Group={{cassandra_group}}
 ExecStart={{cassandra_install_dir}}/bin/cassandra -f -R
 StandardOutput=journal
 StandardError=journal
