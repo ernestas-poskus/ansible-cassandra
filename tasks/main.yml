@@ -19,7 +19,7 @@
     dest=/tmp/{{cassandra_tgz}}
     owner={{cassandra_owner}}
     group={{cassandra_group}}
-    mode=0644
+    mode=0640
 
 - name: "Creating directory {{ item }}"
   file:
@@ -51,7 +51,7 @@
     dest=/etc/profile.d/cassandra.sh
     owner={{cassandra_owner}}
     group={{cassandra_group}}
-    mode=0644
+    mode=0640
 
 - name: Configuring cassandra.yaml
   template: >-
@@ -59,7 +59,7 @@
     dest={{cassandra_install_dir}}/conf/cassandra.yaml
     owner={{cassandra_owner}}
     group={{cassandra_group}}
-    mode=0644
+    mode=0640
   notify:
     - Restart cassandra
 
@@ -69,7 +69,7 @@
     dest={{cassandra_install_dir}}/conf/cassandra-topology.properties
     owner={{cassandra_owner}}
     group={{cassandra_group}}
-    mode=0644
+    mode=0640
   when: cassandra_endpoint_snitch == 'PropertyFileSnitch'
   notify:
     - Restart cassandra
@@ -80,7 +80,7 @@
     dest={{cassandra_install_dir}}/conf/cassandra-rackdc.properties
     owner={{cassandra_owner}}
     group={{cassandra_group}}
-    mode=0644
+    mode=0640
   when: cassandra_endpoint_snitch == 'GossipingPropertyFileSnitch'
   notify:
     - Restart cassandra
@@ -89,8 +89,8 @@
   template: >-
     src=cassandra.service.j2
     dest=/lib/systemd/system/cassandra.service
-    owner={{cassandra_owner}}
-    group={{cassandra_group}}
+    owner=root
+    group=root
     mode=0644
   notify:
     - Reload systemctl daemon
