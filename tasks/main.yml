@@ -1,2 +1,89 @@
 ---
 # tasks file for ansible-cassandra
+- name: Create Cassandra group
+  group:
+    name: "{{ cassandra_group }}"
+    state: present
+
+- name: Create Cassandra user
+  user:
+    name: "{{ cassandra_owner }}"
+    group: "{{ cassandra_group }}"
+    createhome: no
+    shell: /sbin/nologin
+    state: present
+
+- name: Unarchiving Cassandra
+  unarchive: >-
+    copy=no
+    src={{cassandra_tgz_url}}
+    dest={{cassandra_dir}}
+    owner={{cassandra_owner}}
+    group={{cassandra_group}}
+    creates={{cassandra_install_dir}}
+
+- name: "Creating directory {{ item }}"
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ cassandra_owner }}"
+    group: "{{ cassandra_group }}"
+    mode: 0750
+  with_items:
+    - "{{ cassandra_lib_dir }}"
+    - "{{ cassandra_data_dir }}"
+    - "{{ cassnadra_commitlog_dir }}"
+    - "{{ cassandra_cdc_raw_dir }}"
+    - "{{ cassandra_saved_caches_dir }}"
+    - "{{ cassandra_log_dir }}"
+
+- name: Adding Cassandra binaries to system path
+  template: >-
+    src=cassandra.sh.j2
+    dest=/etc/profile.d/cassandra.sh
+    owner={{cassandra_owner}}
+    group={{cassandra_group}}
+    mode=0640
+
+- name: Configuring cassandra.yaml
+  template: >-
+    src=conf/cassandra.yaml.j2
+    dest={{cassandra_install_dir}}/conf/cassandra.yaml
+    owner={{cassandra_owner}}
+    group={{cassandra_group}}
+    mode=0640
+  notify:
+    - Restart cassandra
+
+- name: Configuring topology properties
+  template: >-
+    src=conf/cassandra-topology.properties.j2
+    dest={{cassandra_install_dir}}/conf/cassandra-topology.properties
+    owner={{cassandra_owner}}
+    group={{cassandra_group}}
+    mode=0640
+  when: cassandra_endpoint_snitch == 'PropertyFileSnitch'
+  notify:
+    - Restart cassandra
+
+- name: Configuring rackdc properties
+  template: >-
+    src=conf/cassandra-rackdc.properties.j2
+    dest={{cassandra_install_dir}}/conf/cassandra-rackdc.properties
+    owner={{cassandra_owner}}
+    group={{cassandra_group}}
+    mode=0640
+  when: cassandra_endpoint_snitch == 'GossipingPropertyFileSnitch'
+  notify:
+    - Restart cassandra
+
+- name: Installing Cassandra systemd unit
+  template: >-
+    src=cassandra.service.j2
+    dest=/lib/systemd/system/cassandra.service
+    owner=root
+    group=root
+    mode=0644
+  notify:
+    - Reload systemctl daemon
+    - Restart cassandra

@@ -4,3 +4,8 @@
   remote_user: root
   roles:
     - role: geerlingguy.java
+      java_packages:
+        - java-1.8.0-openjdk
+      when: ansible_distribution in [ 'RedHat', 'CentOS' ]
+
+    - role: geerlingguy.java

@@ -1,2 +1,8 @@
 ---
 # handlers file for ansible-cassandra
+- name: Reload systemctl daemon
+  command: systemctl daemon-reload
+  when: ansible_service_mgr == 'systemd'
+
+- name: Restart cassandra
+  service: name=cassandra state=restarted enabled=yes
