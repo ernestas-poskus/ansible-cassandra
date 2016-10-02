@@ -13,13 +13,14 @@
     shell: /sbin/nologin
     state: present
 
-- name: Downloading Cassandra archive
-  get_url: >-
-    url={{cassandra_tgz_url}}
-    dest=/tmp/{{cassandra_tgz}}
+- name: Unarchiving Cassandra
+  unarchive: >-
+    copy=no
+    src={{cassandra_tgz_url}}
+    dest={{cassandra_dir}}
     owner={{cassandra_owner}}
     group={{cassandra_group}}
-    mode=0640
+    creates={{cassandra_install_dir}}
 
 - name: "Creating directory {{ item }}"
   file:
@@ -35,15 +36,6 @@
     - "{{ cassandra_cdc_raw_dir }}"
     - "{{ cassandra_saved_caches_dir }}"
     - "{{ cassandra_log_dir }}"
-
-- name: Unarchiving Cassandra
-  unarchive: >-
-    copy=no
-    src=/tmp/{{cassandra_tgz}}
-    dest={{cassandra_dir}}
-    owner={{cassandra_owner}}
-    group={{cassandra_group}}
-    creates={{cassandra_install_dir}}
 
 - name: Adding Cassandra binaries to system path
   template: >-
