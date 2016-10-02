@@ -18,7 +18,6 @@ cassandra_cluster_name : 'Test Cluster'
 
 cassandra_dir: '/opt'
 cassandra_install_dir: "{{ cassandra_dir }}/{{ cassandra_name }}"
-cassandra_link_dir: "{{ cassandra_dir }}/cassandra"
 
 cassandra_lib_dir: '/var/lib/cassandra'
 cassandra_data_dir: "{{ cassandra_lib_dir }}/data"

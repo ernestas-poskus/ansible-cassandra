@@ -45,14 +45,6 @@
     group={{cassandra_group}}
     creates={{cassandra_install_dir}}
 
-- name: Linking Cassandra
-  file: >-
-    src={{ cassandra_install_dir }}
-    dest={{ cassandra_link_dir }}
-    owner={{cassandra_owner}}
-    group={{cassandra_group}}
-    state=link
-
 - name: Adding Cassandra binaries to system path
   template: >-
     src=cassandra.sh.j2
